@@ -3,22 +3,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from util import get_data, plot_data, plot_histogram
 
+# debug function
+def print_df(df, head=True):
+    if head:
+        print df.head()    
+    else:
+        print df.tail()
+
 def get_normalized_data(df):
     return df/df.ix[0,:] 
-
-def get_rolling_mean(values, window):
-    # return pd.rolling_mean(values, window=window) --> Deprecated Code
-    return values.rolling(window=window, center=False).mean()
-
-def get_rolling_std(values, window):
-    # return pd.rolling_std(values, window=window) --> Deprecated Code
-    return values.rolling(window=window, center=False).std()
-
-def get_bollinger_bands(rm, rstd):
-    upper_band = rm + (rstd*2)
-    lower_band = rm - (rstd*2)
-    # return np.round(rm,3), np.round(upband,3), np.round(dnband,3)
-    return upper_band, lower_band
 
 def compute_daily_returns(df):
     daily_returns = df.copy()
@@ -28,38 +21,52 @@ def compute_daily_returns(df):
     daily_returns.ix[0, :] = 0 
     return daily_returns
 
+def get_portfolio_stats(df):
+    investment = 100000
+    allocs = [0.2, 0.2, 0.2, 0.2, 0.2]
+    # allocs = [100, 10, 10, 100, 10]
+    # Step 1 Compute Cumulative Return 
+    cumulative_returns = get_normalized_data(df)
+    # Step 2 Multiply normalized data with allocations
+    alloc_val = cumulative_returns * allocs
+    # Step 3 Multiply alloc_val with initial investment
+    invst_val = alloc_val * investment
+    # Step 4 Compute the total portfolio value for each day 
+    port_val = invst_val.sum(axis=1)
+    pstat_daily_rets = compute_daily_returns(df)
+    pstat_daily_rets = pstat_daily_rets[1:]
+    avg_daily_rets = pstat_daily_rets.mean()
+    std_daily_rets = pstat_daily_rets.std()
+    # print_df(pstat_daily_rets[1:])
+    return port_val, pstat_daily_rets, cumulative_returns, avg_daily_rets, std_daily_rets
+
 def init():
     dates = pd.date_range('2016-01-07', '2017-01-05')
-    symbols = ["AAPL", "FB", "GOOG", "NFLX", "TSLA"]
+    symbols = ["AAPL", "MSFT", "AMZN", "FB", "BRK-B"]
     # Step 1 initialize dataframe and combine all input data into one
     df = get_data(symbols, dates)
     # plot_data(df)
-    # # Rolling mean
-    # rm_NFLX = get_rolling_mean(df['NFLX'], window=20)
-    # # Rolling Standard Deviation
-    # rstd_NFLX = get_rolling_std(df['NFLX'], window=20)
-    # # Determine upper and lower bands
-    # upper_band, lower_band = get_bollinger_bands(rm_NFLX, rstd_NFLX)
-    # # Plot raw NFLX values, rolling mean and Bollinger Bands
-    # ax = df['NFLX'].plot(title="Bollinger Bands", label='NFLX')
-    # rm_NFLX.plot(label='Rolling mean', ax=ax)
-    # upper_band.plot(label='upper band', ax=ax)
-    # lower_band.plot(label='lower band', ax=ax)
-
-    # # Add axis labels and legend
-    # ax.set_xlabel("Date")
-    # ax.set_ylabel("Price")
-    # ax.legend(loc='upper left')
-    # plt.show()
-
     # Calculate daily returns
-    daily_returns = compute_daily_returns(df)
-    # plot_data(daily_returns, title="Daily returns", ylabel="Daily returns")
-    plot_histogram(daily_returns, symbols)
+    # daily_returns = compute_daily_returns(df)
+    # # plot_data(daily_returns, title="Daily returns", ylabel="Daily returns")
+    # plot_histogram(daily_returns, symbols)
 
     # # Calculate cumulative returns
     # cumulative_returns = get_normalized_data(df)
     # # print daily_returns
+
+    # Compute Portfolio Value
+    port_val, pstat_daily_rets, cumulative_returns, avg_daily_rets, std_daily_rets = get_portfolio_stats(df)
+    # ax = df['NFLX'].plot(title="Bollinger Bands", label='NFLX')
+    # rm_NFLX.plot(label='Rolling mean', ax=ax)
+    ax = port_val.plot(title="Portfolio Statistics", label='Portfolio Val')
+    # port_val.plot(label='Current Val', ax=ax)
+
+    # # Add axis labels and legend
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Price")
+    ax.legend(loc='upper left')
+    plt.show()
     
     # plot_data_daily_returns(cumulative_returns, title="Cumulative returns", ylabel="Cumulative returns")
 

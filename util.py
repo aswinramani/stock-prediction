@@ -34,3 +34,34 @@ def get_data(symbols, dates):
     # Step 1a Drop NaN values
     df = df.dropna()
     return df
+
+def get_rolling_mean(values, window):
+    # return pd.rolling_mean(values, window=window) --> Deprecated Code
+    return values.rolling(window=window, center=False).mean()
+
+def get_rolling_std(values, window):
+    # return pd.rolling_std(values, window=window) --> Deprecated Code
+    return values.rolling(window=window, center=False).std()
+
+def get_bollinger_bands(rm, rstd):
+    upper_band = rm + (rstd*2)
+    lower_band = rm - (rstd*2)
+    # return np.round(rm,3), np.round(upband,3), np.round(dnband,3)
+    return upper_band, lower_band
+    # # Rolling mean
+    # rm_NFLX = get_rolling_mean(df['NFLX'], window=20)
+    # # Rolling Standard Deviation
+    # rstd_NFLX = get_rolling_std(df['NFLX'], window=20)
+    # # Determine upper and lower bands
+    # upper_band, lower_band = get_bollinger_bands(rm_NFLX, rstd_NFLX)
+    # # Plot raw NFLX values, rolling mean and Bollinger Bands
+    # ax = df['NFLX'].plot(title="Bollinger Bands", label='NFLX')
+    # rm_NFLX.plot(label='Rolling mean', ax=ax)
+    # upper_band.plot(label='upper band', ax=ax)
+    # lower_band.plot(label='lower band', ax=ax)
+
+    # # Add axis labels and legend
+    # ax.set_xlabel("Date")
+    # ax.set_ylabel("Price")
+    # ax.legend(loc='upper left')
+    # plt.show()
